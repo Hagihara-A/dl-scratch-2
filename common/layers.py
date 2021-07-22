@@ -104,6 +104,7 @@ class Embedding:
         dW, = self.grads
         dW[...] = 0
         np.add.at(dW, self.idx, dout)
+        return None
 
 
 class EmbeddingDot:
@@ -111,7 +112,7 @@ class EmbeddingDot:
         self.embed = Embedding(W)
         self.params = self.embed.params
         self.grads = self.embed.grads
-        self.cache = None
+        self.cache: Optional[tuple] = None
 
     def forward(self, h: np.ndarray, idx: np.ndarray):
         target_W = self.embed.forward(idx)
@@ -126,5 +127,5 @@ class EmbeddingDot:
 
         dtarget_W = dout * h
         self.embed.backward(dtarget_W)
-        dh = dot * target_W
+        dh = dout * target_W
         return dh
