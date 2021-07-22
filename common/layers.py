@@ -86,3 +86,45 @@ class SoftmaxWithLoss:
         dx = dx / batch_size
 
         return dx
+
+
+class Embedding:
+    def __init__(self, W: np.ndarray) -> None:
+        self.params = [W]
+        self.grads = [np.zeros_like(W)]
+        self.idx = None
+
+    def forward(self, idx):
+        W, = self.params
+        self.idx = idx
+        out = W[idx]
+        return out
+
+    def backward(self, dout):
+        dW, = self.grads
+        dW[...] = 0
+        np.add.at(dW, self.idx, dout)
+
+
+class EmbeddingDot:
+    def __init__(self, W: np.ndarray) -> None:
+        self.embed = Embedding(W)
+        self.params = self.embed.params
+        self.grads = self.embed.grads
+        self.cache = None
+
+    def forward(self, h: np.ndarray, idx: np.ndarray):
+        target_W = self.embed.forward(idx)
+        out = np.sum(target_W * h, axis=1)
+        self.cache = (h, target_W)
+
+        return out
+
+    def backward(self, dout: np.ndarray):
+        h, target_W = self.cache
+        dout = dout.reshape(dout.shape[0], 1)
+
+        dtarget_W = dout * h
+        self.embed.backward(dtarget_W)
+        dh = dot * target_W
+        return dh
