@@ -2,15 +2,16 @@ from common.functions import softmax
 from typing import Optional
 import numpy as np
 from .layers import Embedding
+from .types import NDArrayF, NDArrayI
 
 
 class RNN:
-    def __init__(self, Wx: np.ndarray, Wh: np.ndarray, b: np.ndarray) -> None:
-        self.params = [Wx, Wh, b]
-        self.grads = [np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b)]
-        self.cache = None
+    def __init__(self, Wx: NDArrayF, Wh: NDArrayF, b: NDArrayF) -> None:
+        self.params = (Wx, Wh, b)
+        self.grads = (np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b))
+        self.cache: Optional[tuple[NDArrayF, NDArrayF, NDArrayF]] = None
 
-    def forward(self, x: np.ndarray, h_prev: np.ndarray):
+    def forward(self, x: NDArrayI, h_prev: NDArrayF):
         Wx, Wh, b = self.params
         t = h_prev @ Wh + x @ Wx + b
         h_next = np.tanh(t)
@@ -18,7 +19,7 @@ class RNN:
         self.cache = (x, h_prev, h_next)
         return h_next
 
-    def backward(self, dh_next: np.ndarray):
+    def backward(self, dh_next: NDArrayF):
         Wx, Wh, b = self.params
         x, h_prev, h_next = self.cache
 
@@ -37,15 +38,16 @@ class RNN:
 
 
 class TimeRNN:
-    def __init__(self, Wx: np.ndarray, Wh: np.ndarray, b: np.ndarray, stateful=False) -> None:
-        self.params = [Wx, Wh, b]
-        self.grads = [np.zeros_like(A) for A in self.params]
-        self.layers: list[RNN] = None
-        self.h: Optional[np.ndarray] = None
-        self.dh: Optional[np.ndarray] = None
+    def __init__(self, Wx: NDArrayF, Wh: NDArrayF, b: NDArrayF,
+                 stateful: bool = False) -> None:
+        self.params = (Wx, Wh, b)
+        self.grads = (np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b))
+        self.layers: list[RNN] = []
+        self.h: Optional[NDArrayF] = None
+        self.dh: Optional[NDArrayF] = None
         self.stateful = stateful
 
-    def set_state(self, h: np.ndarray):
+    def set_state(self, h: NDArrayF):
         self.h = h
 
     def reset_state(self):
@@ -57,7 +59,7 @@ class TimeRNN:
         D, H = Wx.shape
 
         self.layers = []
-        hs = np.empty((N, T, H), dtype="f")
+        hs = np.empty((N, T, H), dtype=np.float_)
 
         if not self.stateful or self.h is None:
             self.h = np.zeros((N, H), dtype="f")
@@ -76,8 +78,8 @@ class TimeRNN:
         D, H = Wx.shape
 
         dxs = np.empty((N, T, D), dtype="f")
-        dh = 0
-        grads = [0, 0, 0]
+        dh = np.array(0.)
+        grads = [np.array(0.), np.array(0.), np.array(0.)]
         for t in reversed(range(T)):
             layer = self.layers[t]
             dx, dh = layer.backward(dhs[:, t, :])

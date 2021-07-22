@@ -1,21 +1,22 @@
 from typing import Optional
 import numpy as np
 from .functions import softmax, cross_entropy_error
+from .types import NDArrayF
 
 
 class MatMul:
-    def __init__(self, W: np.ndarray) -> None:
+    def __init__(self, W: NDArrayF) -> None:
         self.params = [W]
         self.grads = [np.zeros_like(W)]
-        self.x: Optional[np.ndarray] = None
+        self.x: Optional[NDArrayF] = None
 
-    def forward(self, x: np.ndarray):
+    def forward(self, x: NDArrayF):
         W, = self.params
         out = np.dot(x, W)
         self.x = x
         return out
 
-    def backward(self, dout: np.ndarray):
+    def backward(self, dout: NDArrayF):
         W, = self.params
         dx = np.dot(dout, W.T)
         dW = np.dot(self.x.T, dout)
@@ -25,15 +26,16 @@ class MatMul:
 
 class Sigmoid:
     def __init__(self) -> None:
-        self.params, self.grads = [], []
-        self.out = None
+        self.params: list[NDArrayF] = []
+        self.grads: list[NDArrayF] = []
+        self.out: Optional[NDArrayF] = None
 
-    def forward(self, x: np.ndarray):
+    def forward(self, x: NDArrayF):
         out = 1/(1+np.exp(-x))
         self.out = out
         return out
 
-    def backward(self, dout: np.ndarray):
+    def backward(self, dout: NDArrayF):
         dx = dout * (1.0 - self.out)*self.out
         return dx
 
@@ -42,15 +44,15 @@ class Affine:
     def __init__(self, W, b) -> None:
         self.params = [W, b]
         self.grads = [np.zeros_like(W), np.zeros_like(b)]
-        self.x = None
+        self.x: Optional[NDArrayF] = None
 
-    def forward(self, x: np.ndarray):
+    def forward(self, x: NDArrayF):
         W, b = self.params
         out = x @ W + b
         self.x = x
         return out
 
-    def backward(self, dout: np.ndarray):
+    def backward(self, dout: NDArrayF):
         W, _ = self.params
         dx = dout @ W.T
         dW = self.x.T @ dout
@@ -89,7 +91,7 @@ class SoftmaxWithLoss:
 
 
 class Embedding:
-    def __init__(self, W: np.ndarray) -> None:
+    def __init__(self, W: NDArrayF) -> None:
         self.params = [W]
         self.grads = [np.zeros_like(W)]
         self.idx = None
@@ -108,20 +110,20 @@ class Embedding:
 
 
 class EmbeddingDot:
-    def __init__(self, W: np.ndarray) -> None:
+    def __init__(self, W: NDArrayF) -> None:
         self.embed = Embedding(W)
         self.params = self.embed.params
         self.grads = self.embed.grads
         self.cache: Optional[tuple] = None
 
-    def forward(self, h: np.ndarray, idx: np.ndarray):
+    def forward(self, h: NDArrayF, idx: NDArrayF):
         target_W = self.embed.forward(idx)
         out = np.sum(target_W * h, axis=1)
         self.cache = (h, target_W)
 
         return out
 
-    def backward(self, dout: np.ndarray):
+    def backward(self, dout: NDArrayF):
         h, target_W = self.cache
         dout = dout.reshape(dout.shape[0], 1)
 
