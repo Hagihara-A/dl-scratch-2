@@ -22,9 +22,9 @@ class EmbeddingTest(TestCase):
 
 class EmbeddingDotTest(TestCase):
     def test_forward(self):
-        W = np.arange(12).reshape(3, 4).T
-        embDot = L.EmbeddingDot(W)
-        h = np.array([[0, 1, 2], [3, 4, 5]])
+        W = np.arange(12).reshape(3, 4)
+        EmbDot = L.EmbeddingDot(W.T)
+        h = np.arange(6).reshape(2, 3)
         idx = np.array([3, 1])
-        out = embDot.forward(h, idx)
-        assert_equal(out, [[29, 23], [92, 68]])
+        out = EmbDot.forward(h, idx)
+        assert_equal(out, (h @ W)[[0, 1], idx])
