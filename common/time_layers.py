@@ -86,7 +86,7 @@ class TimeRNN:
             dxs[:, t, :] = dx
 
             for i, grad in enumerate(layer.grads):
-                grads[i] += grad
+                grads[i] = grad + grads[i]
 
         for i, grad in enumerate(grads):
             self.grads[i][...] = grad
