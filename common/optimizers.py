@@ -1,5 +1,4 @@
-
-import numpy as np
+from .np import np
 
 
 class SGD:

@@ -1,6 +1,6 @@
 from common.functions import sigmoid, softmax
 from typing import Optional
-import numpy as np
+from .np import np
 from .layers import Embedding
 from .types import NDArrayF, NDArrayI
 
@@ -326,3 +326,21 @@ class TimeLSTM:
 
     def reset_state(self):
         self.h, self.c = None, None
+
+
+class TimeDropout:
+    def __init__(self, ratio=0.5):
+        self.params, self.grads = [], []
+        self.ratio = ratio
+        self.train_flg = True
+
+    def forward(self, xs: np.ndarray):
+        if self.train_flg:
+            self.mask = np.random.random(xs.shape) > self.ratio
+            scale = 1 / (1 - self.ratio)
+            return xs * self.mask * scale
+        else:
+            return xs
+
+    def backward(self, dout: np.ndarray):
+        return dout * self.mask

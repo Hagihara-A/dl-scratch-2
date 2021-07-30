@@ -1,4 +1,4 @@
-import numpy as np
+from .np import np
 import sys
 
 
@@ -134,3 +134,17 @@ def eval_seq2seq(model, question, correct, id_to_char,
         print('---')
 
     return 1 if guess == correct else 0
+
+
+def to_cpu(x):
+    import numpy
+    if type(x) == numpy.ndarray:
+        return x
+    return np.asnumpy(x)
+
+
+def to_gpu(x):
+    import cupy
+    if type(x) == cupy.ndarray:
+        return x
+    return cupy.asarray(x)
