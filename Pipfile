@@ -9,9 +9,9 @@ autopep8 = "*"
 flake8 = "*"
 mypy = "*"
 ipykernel = "*"
+matplotlib = "*"
 
 [dev-packages]
-matplotlib = "*"
 
 [requires]
 python_version = "3.9"

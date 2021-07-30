@@ -1,15 +1,8 @@
+# coding: utf-8
 import os
 import pickle
-import numpy as np
-
-
-def to_gpu(x): return x
-
-
-def to_cpu(x): return x
-
-
-GPU = False
+from .np import np, GPU
+from .util import to_gpu, to_cpu
 
 
 class BaseModel:
